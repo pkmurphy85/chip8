@@ -49,43 +49,49 @@ void Chip8::initialize(void)
     cout << "Initialized" << endl;
 }
 
-uint8_t Chip8::get_nibble3(uint16_t opcode)
+uint8_t Chip8::current_opcode_nibble3(void)
 {
-    return (((opcode & nibble3) >> 24) & 0x0F);
+    return (((current_opcode & nibble3) >> 24) & 0x0F);
 }
 
-uint8_t Chip8::get_nibble2(uint16_t opcode)
+uint8_t Chip8::current_opcode_nibble2(void)
 {
-    return (((opcode & nibble2) >> 16) & 0x0F);
+    return (((current_opcode & nibble2) >> 16) & 0x0F);
 }
 
-uint8_t Chip8::get_nibble1(uint16_t opcode)
+uint8_t Chip8::current_opcode_nibble1(void)
 {
-    return (((opcode & nibble1) >> 8) & 0x0F);
+    return (((current_opcode & nibble1) >> 8) & 0x0F);
 }
 
-uint8_t Chip8::get_nibble0(uint16_t opcode)
+uint8_t Chip8::current_opcode_nibble0(void)
 {
-    return ((opcode & nibble0) & 0x0F);
+    return ((current_opcode & nibble0) & 0x0F);
 }
 
-
-uint16_t Chip8::get_program_counter(void)
+uint16_t Chip8::current_opcode_lowest_12_bits()
 {
-    return registers.program_counter;
+    return (current_opcode & 0x0FFF);   
 }
+
+uint8_t Chip8::current_opcode_byte0(void)
+{
+    return (current_opcode & byte0);
+}
+
+uint8_t Chip8::current_opcode_byte1(void)
+{
+    return (current_opcode & byte1);
+}
+
 
 void Chip8::fetch(void)
 {                   
     // Memory is composed of 4096 bytes. ins
     // MSB of instruction first byte, LSB of instruction is second byte
-    current_instruction = (uint16_t)((memory[registers.program_counter] << 8) | memory[registers.program_counter + 1]);
+    current_opcode = (uint16_t)((memory[registers.program_counter] << 8) | 
+                                      memory[registers.program_counter + 1]);
     registers.program_counter += 2;
-}
-
-uint16_t Chip8::get_lowest_12_bits(uint16_t opcode)
-{
-    return (opcode & 0x0FFF);   
 }
 
 void Chip8::opcode_unhandled(void)
@@ -115,7 +121,7 @@ void Chip8::opcode_00EE(void)
 void Chip8::opcode_1nnn(void)
 {
     // Jump to location nnn
-    registers.program_counter = get_lowest_12_bits(current_opcode);
+    registers.program_counter = current_opcode_lowest_12_bits();
 }
 
 void Chip8::opcode_2nnn(void)
@@ -124,14 +130,16 @@ void Chip8::opcode_2nnn(void)
     
     stack[registers.stack_pointer] = registers.program_counter;
     registers.stack_pointer += 1;
-    registers.program_counter = get_lowest_12_bits(current_opcode);
+    registers.program_counter = current_opcode_lowest_12_bits();
 }
 
 void Chip8::opcode_3xkk(void)
 {
     // Skip next instruction if Vx = kk
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t byte = current_opcode_byte0();
 
-    if(registers.general_purpose[get_nibble2(current_opcode)] == (current_opcode & byte0))
+    if(registers.general_purpose[reg_x] == byte)
     {
         registers.program_counter += 2;
     }
@@ -141,7 +149,10 @@ void Chip8::opcode_4xkk(void)
 {
     // Skip next instruction if Vx != kk
 
-    if(registers.general_purpose[get_nibble2(current_opcode)] != (current_opcode & byte0))
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t byte = current_opcode_byte0();
+
+    if(registers.general_purpose[reg_x] != byte)
     {
         registers.program_counter += 2;
     }
@@ -151,7 +162,10 @@ void Chip8::opcode_5xy0(void)
 {
     // Skip next instruction if Vx = Vy
 
-    if(registers.general_purpose[get_nibble2(current_opcode)] != registers.general_purpose[get_nibble1(current_opcode)])
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
+
+    if(registers.general_purpose[reg_x] != registers.general_purpose[reg_y])
     {
         registers.program_counter += 2;
     }
@@ -161,108 +175,128 @@ void Chip8::opcode_6xkk(void)
 {
     // Set Vx = kk
 
-    registers.general_purpose[get_nibble2(current_opcode)] = (current_opcode & byte0);
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t byte = current_opcode_byte0();
+
+    registers.general_purpose[reg_x] = byte;
 }
 
 void Chip8::opcode_7xkk(void)
 {
     // Set Vx = Vx + kk
 
-    registers.general_purpose[get_nibble2(current_opcode)] += (current_opcode & byte0);
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t byte = current_opcode_byte0();
+
+    registers.general_purpose[reg_x] += byte;
 }
 
 void Chip8::opcode_8xy0(void)
 {
     // Set Vx = Vy
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
 
-    registers.general_purpose[get_nibble2(current_opcode)] = registers.general_purpose[get_nibble1(current_opcode)];
+    registers.general_purpose[reg_x] = registers.general_purpose[reg_y];
 }
 
 void Chip8::opcode_8xy1(void)
 {
     // Set Vx = Vx OR Vy
 
-    registers.general_purpose[get_nibble2(current_opcode)] |= registers.general_purpose[get_nibble1(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
+
+    registers.general_purpose[reg_x] |= registers.general_purpose[reg_y];
 }
 
 void Chip8::opcode_8xy2(void)
 {
     // Set Vx = Vx AND Vy
 
-    registers.general_purpose[get_nibble2(current_opcode)] &= registers.general_purpose[get_nibble1(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
+
+    registers.general_purpose[reg_x] &= registers.general_purpose[reg_y];
 }
 
 void Chip8::opcode_8xy3(void)
 {
     // Set Vx = Vx XOR Vy
 
-    registers.general_purpose[get_nibble2(current_opcode)] ^= registers.general_purpose[get_nibble1(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
+
+    registers.general_purpose[reg_x] ^= registers.general_purpose[reg_y];
 }
 
 void Chip8::opcode_8xy4(void)
 {
     // Set Vx = Vx + Vy, set VF = carry if overflow
-    uint8_t *reg_x = &registers.general_purpose[get_nibble2(current_opcode)];
-    uint8_t *reg_y = &registers.general_purpose[get_nibble1(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
 
-    uint16_t temp = *reg_x;
-    *reg_x += *reg_y;
+    uint16_t temp = registers.general_purpose[reg_x];
+    registers.general_purpose[reg_x]  += registers.general_purpose[reg_y];
 
     // if there is an overflow, previous value will be greater than new value
-    registers.general_purpose[15] = temp > *reg_x ? 1 : 0;
+    registers.general_purpose[15] = temp > registers.general_purpose[reg_x] ? 1 : 0;
 }
 
 void Chip8::opcode_8xy5(void)
 {
     // Set Vx = Vx - Vy, set VF = NOT borrow
 
-    uint8_t *reg_x = &registers.general_purpose[get_nibble2(current_opcode)];
-    uint8_t *reg_y = &registers.general_purpose[get_nibble1(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
 
-    registers.general_purpose[15] = *reg_x > *reg_y ? 1 : 0;
+    registers.general_purpose[15] = registers.general_purpose[reg_x] > registers.general_purpose[reg_y] ? 1 : 0;
 
-    *reg_x -= *reg_y;
+    registers.general_purpose[reg_x] -= registers.general_purpose[reg_y];
 }
 
 void Chip8::opcode_8xy6(void)
 {
     // Set Vx = Vx SHR 1
 
-    uint8_t *reg_x = &registers.general_purpose[get_nibble2(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
 
-    registers.general_purpose[15] = (*reg_x & 0x1 == 0x1) ? 1 : 0;
+    registers.general_purpose[15] = (registers.general_purpose[reg_x] & 0x1) == 0x1 ? 1 : 0;
 
-    *reg_x /= 2;
+    registers.general_purpose[reg_x] /= 2;
 }
 
 void Chip8::opcode_8xy7(void)
 {
     // Set Vx = Vy - Vx, set VF = NOT borrow
 
-    uint8_t *reg_x = &registers.general_purpose[get_nibble2(current_opcode)];
-    uint8_t *reg_y = &registers.general_purpose[get_nibble1(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
 
-    registers.general_purpose[15] = *reg_y > *reg_x ? 1 : 0;
+    registers.general_purpose[15] = registers.general_purpose[reg_x] > registers.general_purpose[reg_y] ? 1 : 0;
 
-    *reg_x = *reg_y - *reg_x;
+    registers.general_purpose[reg_x] = registers.general_purpose[reg_y] - registers.general_purpose[reg_x];
 }
 
 void Chip8::opcode_8xyE(void)
 {
     // Set Vx = Vx SHL 1 
 
-    uint8_t *reg_x = &registers.general_purpose[get_nibble2(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
 
-    registers.general_purpose[15] = (*reg_x & 0x80 == 0x80) ? 1 : 0;
+    registers.general_purpose[15] = (registers.general_purpose[reg_x] & 0x80) == 0x80 ? 1 : 0;
     
-    *reg_x *= 2;
+    registers.general_purpose[reg_x] *= 2;
 }
 
 void Chip8::opcode_9xy0(void)
 {
     // Skip next instruction if Vx != Vy
 
-    if(registers.general_purpose[get_nibble2(current_opcode)] != registers.general_purpose[get_nibble1(current_opcode)] )
+    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t reg_y = current_opcode_nibble1();
+
+    if(registers.general_purpose[reg_x] != registers.general_purpose[reg_y] )
     {
         registers.program_counter += 2;
     }
@@ -272,21 +306,22 @@ void Chip8::opcode_Annn(void)
 {
     // Set I = nnn
 
-    registers.index = get_lowest_12_bits(current_opcode);
+    registers.index = current_opcode_lowest_12_bits();
 }
 
 void Chip8::opcode_Bnnn(void)
 {
     // Jump to location nnn + V0
 
-    registers.program_counter = get_lowest_12_bits(current_opcode) + registers.general_purpose[0];
+    registers.program_counter = current_opcode_lowest_12_bits() + registers.general_purpose[0];
 }
 
 void Chip8::opcode_Cxkk(void)
 {
     // Set Vx = random byte AND kk
+    uint8_t reg_x = current_opcode_nibble2();
 
-    registers.general_purpose[get_nibble2(current_opcode)] = (rand() % 256) & (current_opcode & byte0);
+    registers.general_purpose[reg_x] = (rand() % 256) & current_opcode_byte0();
 }
 
 void Chip8::opcode_Dxyn(void)
@@ -300,9 +335,9 @@ void Chip8::opcode_Ex9E(void)
 {
     // Skip next instruction if key with the value of Vx is pressed
 
-    uint8_t *reg_x = &registers.general_purpose[get_nibble2(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
 
-    if(keyboard[*reg_x])
+    if(keyboard[reg_x])
     {
         registers.program_counter += 2;
     }
@@ -312,9 +347,9 @@ void Chip8::opcode_ExA1(void)
 {
     // Skip next instruction if key with the value of Vx is not pressed
 
-    uint8_t *reg_x = &registers.general_purpose[get_nibble2(current_opcode)];
+    uint8_t reg_x = current_opcode_nibble2();
 
-    if(!keyboard[*reg_x])
+    if(!keyboard[reg_x])
     {
         registers.program_counter += 2;
     }
@@ -322,7 +357,8 @@ void Chip8::opcode_ExA1(void)
 
 void Chip8::opcode_Fx07(void)
 {
-    cout << "Need to implement opcode_Fx07" << endl;
+    // Set Vx = delay timer value
+    
 }
 
 void Chip8::opcode_Fx0A(void)

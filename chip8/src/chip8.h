@@ -41,17 +41,19 @@ class Chip8
     private:
         register_set registers;           /**< Registers */
         uint8_t memory[4096];             /**< 4K memory */
-        uint16_t current_instruction;     /**< The current intruction */
         uint16_t stack[16];
         uint8_t keyboard[16]{};
 	    uint32_t video[64 * 32]{};
-        uint16_t current_opcode;
+        uint16_t current_opcode;          /**< The current intruction */
 
-        uint16_t get_lowest_12_bits(uint16_t opcode);
-        uint8_t get_nibble3(uint16_t opcode);
-        uint8_t get_nibble2(uint16_t opcode);
-        uint8_t get_nibble1(uint16_t opcode);
-        uint8_t get_nibble0(uint16_t opcode);
+        uint16_t current_opcode_lowest_12_bits(void);
+        uint8_t current_opcode_nibble3(void);
+        uint8_t current_opcode_nibble2(void);
+        uint8_t current_opcode_nibble1(void);
+        uint8_t current_opcode_nibble0(void);
+        uint8_t current_opcode_byte0(void);
+        uint8_t current_opcode_byte1(void);
+
 
         void opcode_unhandled(void);
         void opcode_0nnn(void);
