@@ -43,8 +43,9 @@ class Chip8
         uint8_t memory[4096];             /**< 4K memory */
         uint16_t current_instruction;     /**< The current intruction */
         uint16_t stack[16];
-        uint8_t keypad[16]{};
+        uint8_t keyboard[16]{};
 	    uint32_t video[64 * 32]{};
+        uint16_t current_opcode;
 
         uint16_t get_lowest_12_bits(uint16_t opcode);
         uint8_t get_nibble3(uint16_t opcode);
@@ -52,45 +53,45 @@ class Chip8
         uint8_t get_nibble1(uint16_t opcode);
         uint8_t get_nibble0(uint16_t opcode);
 
-        void opcode_unhandled(uint16_t opcode);
-        void opcode_0nnn(uint16_t address);
-        void opcode_00E0(uint16_t address);
-        void opcode_00EE(uint16_t address);
-        void opcode_1nnn(uint16_t address);
-        void opcode_2nnn(uint16_t address);
-        void opcode_3xkk(uint16_t opcode);
-        void opcode_4xkk(uint16_t opcode);
-        void opcode_5xy0(uint16_t opcode);
-        void opcode_6xkk(uint16_t opcode);
-        void opcode_7xkk(uint16_t opcode);
+        void opcode_unhandled(void);
+        void opcode_0nnn(void);
+        void opcode_00E0(void);
+        void opcode_00EE(void);
+        void opcode_1nnn(void);
+        void opcode_2nnn(void);
+        void opcode_3xkk(void);
+        void opcode_4xkk(void);
+        void opcode_5xy0(void);
+        void opcode_6xkk(void);
+        void opcode_7xkk(void);
         
-        void opcode_8xy0(uint16_t opcode);
-        void opcode_8xy1(uint16_t opcode);
-        void opcode_8xy2(uint16_t opcode);
-        void opcode_8xy3(uint16_t opcode);
-        void opcode_8xy4(uint16_t opcode);
-        void opcode_8xy5(uint16_t opcode);
-        void opcode_8xy6(uint16_t opcode);
-        void opcode_8xy7(uint16_t opcode);
-        void opcode_8xyE(uint16_t opcode);
+        void opcode_8xy0(void);
+        void opcode_8xy1(void);
+        void opcode_8xy2(void);
+        void opcode_8xy3(void);
+        void opcode_8xy4(void);
+        void opcode_8xy5(void);
+        void opcode_8xy6(void);
+        void opcode_8xy7(void);
+        void opcode_8xyE(void);
 
-        void opcode_9xy0(uint16_t opcode);
-        void opcode_Annn(uint16_t opcode);
-        void opcode_Bnnn(uint16_t opcode);
-        void opcode_Cxkk(uint16_t opcode);
-        void opcode_Dxyn(uint16_t opcode);
-        void opcode_Ex9E(uint16_t opcode);
-        void opcode_ExA1(uint16_t opcode);
+        void opcode_9xy0(void);
+        void opcode_Annn(void);
+        void opcode_Bnnn(void);
+        void opcode_Cxkk(void);
+        void opcode_Dxyn(void);
+        void opcode_Ex9E(void);
+        void opcode_ExA1(void);
 
-        void opcode_Fx07(uint16_t opcode);
-        void opcode_Fx0A(uint16_t opcode);
-        void opcode_Fx15(uint16_t opcode);
-        void opcode_Fx18(uint16_t opcode);
-        void opcode_Fx1E(uint16_t opcode);
-        void opcode_Fx29(uint16_t opcode);
-        void opcode_Fx33(uint16_t opcode);
-        void opcode_Fx55(uint16_t opcode);
-        void opcode_Fx65(uint16_t opcode);
+        void opcode_Fx07(void);
+        void opcode_Fx0A(void);
+        void opcode_Fx15(void);
+        void opcode_Fx18(void);
+        void opcode_Fx1E(void);
+        void opcode_Fx29(void);
+        void opcode_Fx33(void);
+        void opcode_Fx55(void);
+        void opcode_Fx65(void);
 
         
     public: 
