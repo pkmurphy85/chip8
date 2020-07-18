@@ -36,8 +36,6 @@ uint8_t fonts[] =
 	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-///typedef void (*instruction_handler)(uint16_t);
-
 class Chip8 
 {
     private:
@@ -83,7 +81,6 @@ class Chip8
         void opcode_Dxyn(uint16_t opcode);
         void opcode_Ex9E(uint16_t opcode);
         void opcode_ExA1(uint16_t opcode);
-
 
         void opcode_Fx07(uint16_t opcode);
         void opcode_Fx0A(uint16_t opcode);

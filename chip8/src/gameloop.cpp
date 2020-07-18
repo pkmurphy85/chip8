@@ -40,36 +40,52 @@ int Gameloop::execute(void)
 
 bool Gameloop::initialize(void)
 {
-    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) 
+    bool return_code = true;
+    try
     {
-        std::cout << "SDL_Init() failed: " << SDL_GetError() << std::endl;
-        return false;
-    }
+        if(SDL_Init(SDL_INIT_EVERYTHING) < 0) 
+        {
+            std::cout << "SDL_Init() failed: " << std::endl;
+            throw SDL_GetError();
+        }
  
-    window = SDL_CreateWindow("My Game Window",
-                          SDL_WINDOWPOS_CENTERED,
-                          SDL_WINDOWPOS_CENTERED,
-                          640, 320,
-                          SDL_WINDOW_SHOWN);
-    if(window == NULL) 
+        window = SDL_CreateWindow("My Game Window",
+                            SDL_WINDOWPOS_CENTERED,
+                            SDL_WINDOWPOS_CENTERED,
+                            640, 320,
+                            SDL_WINDOW_SHOWN);
+        if(window == NULL) 
+        {
+            std::cout << "SDL_CreateWindow failed: " << std::endl;
+            throw SDL_GetError();
+        }
+
+        // Uint32 render_flags = SDL_RENDERER_ACCELERATED;
+        SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+        if (renderer == NULL )
+        {
+            std::cout << "SDL_CreateRenderer failed" << std::endl;
+            throw SDL_GetError();
+        }
+
+        // make it black
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        SDL_RenderPresent(renderer); 
+    }
+    catch(const char* error)
     {
-        std::cout << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
-        return false;
+        return_code = false;
+        std::cout << "Error in initalize: [" << error << "]" << std::endl;
+    }
+    catch(...)
+    {
+        return_code = false;
+        std::cout << "Unhandled error" << std::endl;
     }
 
-   // Uint32 render_flags = SDL_RENDERER_ACCELERATED;
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-    if (renderer == NULL )
-    {
-        std::cout << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    // make it black
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer); 
-    return true;
+    return return_code;
+    
 }
 
 void Gameloop::process_event(SDL_Event* event)
