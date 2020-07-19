@@ -358,27 +358,58 @@ void Chip8::opcode_ExA1(void)
 void Chip8::opcode_Fx07(void)
 {
     // Set Vx = delay timer value
-    
+
+     uint8_t reg_x = current_opcode_nibble2();
+
+     registers.general_purpose[reg_x] = registers.delay_timer;
 }
 
 void Chip8::opcode_Fx0A(void)
 {
-    cout << "Need to implement opcode_Fx0A" << endl;
+    // Wait for a key press, store the value of the key in Vx
+
+    uint8_t reg_x = current_opcode_nibble2();
+
+    bool key_pressed = false;
+    for(int i = 0; i < sizeof(keyboard); i++)
+    {
+        if(keyboard[i] == 1)
+        {
+            key_pressed = true;
+            registers.general_purpose[reg_x] = i;
+        }
+    }
+
+    if(!key_pressed)
+    {
+        registers.program_counter -= 2; // will cause this function to run again until key pressed
+    }
 }
 
 void Chip8::opcode_Fx15(void)
 {
-    cout << "Need to implement opcode_Fx15" << endl;
+    // Set delay timer = Vx
+
+    uint8_t reg_x = current_opcode_nibble2();
+
+    registers.delay_timer = registers.general_purpose[reg_x];
 }
 
 void Chip8::opcode_Fx18(void)
 {
-    cout << "Need to implement opcode_Fx18" << endl;
+    // Set sound timer = Vx
+    uint8_t reg_x = current_opcode_nibble2();
+
+    registers.sound_timer = registers.general_purpose[reg_x];
 }
 
 void Chip8::opcode_Fx1E(void)
 {
-    cout << "Need to implement opcode_Fx1E" << endl;
+    // Set I = I + Vx
+
+    uint8_t reg_x = current_opcode_nibble2();
+
+    registers.index += registers.general_purpose[reg_x];
 }
 
 void Chip8::opcode_Fx29(void)
@@ -393,12 +424,25 @@ void Chip8::opcode_Fx33(void)
 
 void Chip8::opcode_Fx55(void)
 {
-    cout << "Need to implement opcode_Fx55" << endl;
+    // Store registers V0 through Vx in memory starting at location I
+
+    uint8_t offset = current_opcode_nibble2();
+
+    std::memcpy(&memory[registers.index], registers.general_purpose, offset);
+
+    //std::copy(registers.general_purpose, registers.general_purpose+reg_x, memory[registers.index]);
 }
 
 void Chip8::opcode_Fx65(void)
 {
-    cout << "Need to implement opcode_Fx65" << endl;
+    // Read registers V0 through Vx from memory starting at location I
+
+    uint8_t offset = current_opcode_nibble2();
+
+    //uint8_t *start_location = &memory[registers.index];
+
+    std::memcpy(registers.general_purpose, &memory[registers.index], offset);
+    //std::copy(start_location, start_location+offset. registers.general_purpose);
 }
 
 

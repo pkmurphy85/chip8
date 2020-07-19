@@ -7,12 +7,12 @@
 #define FONTS_START_ADDRESS 0x50
 
 typedef struct {
-    uint8_t general_purpose[16];        /**< 16 8-bit General Purpose registers */
-    uint16_t index;                     /**< 16-bit Index register */
-    uint16_t program_counter;           /**< 16-bit Program Counter */
-    uint8_t stack_pointer;              /**< 8-bit Stack Pointer - up to 16 levels */
-    uint8_t delay_timer;                /**< 8-bit Delay Timer register */
-    uint8_t sound_timer;                /**< 8-bit Sound Timer register */
+    uint8_t general_purpose[16];        /* 16 8-bit General Purpose registers */
+    uint16_t index;                     /* 16-bit Index register */
+    uint16_t program_counter;           /* 16-bit Program Counter */
+    uint8_t stack_pointer;              /* 8-bit Stack Pointer - up to 16 levels */
+    uint8_t delay_timer;                /* 8-bit Delay Timer register */
+    uint8_t sound_timer;                /* 8-bit Sound Timer register */
     
 } register_set;
 
