@@ -9,7 +9,7 @@ Gameloop::Gameloop(void)
     texture = NULL;
 }
 
-Gameloop::~Gameloop(void)
+Gameloop::~Gameloop()
 {
 
 }
@@ -22,6 +22,7 @@ int Gameloop::execute(void)
     }
 
     SDL_Event event;
+    
     while(is_running)
     {
         while(SDL_PollEvent(&event))
@@ -72,6 +73,8 @@ bool Gameloop::initialize(void)
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_RenderPresent(renderer); 
+
+        chip8.initialize();
     }
     catch(const char* error)
     {
@@ -98,7 +101,8 @@ void Gameloop::process_event(SDL_Event* event)
 
 void Gameloop::update(void)
 {
-
+    chip8.fetch();
+    chip8.execute();
 }
 
 void Gameloop::render(void)

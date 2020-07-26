@@ -59,6 +59,11 @@
         "system_error": "cpp",
         "initializer_list": "cpp",
         "thread": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "csignal": "cpp",
+        "unordered_set": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
     }
 }

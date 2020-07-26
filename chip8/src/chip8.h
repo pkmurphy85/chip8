@@ -3,8 +3,10 @@
 
 #include <cstdint>
 
-#define ROM_START_ADDRESS 0x200
+#define ROM_START_ADDRESS   0x200
 #define FONTS_START_ADDRESS 0x50
+#define VIDEO_WIDTH         64
+#define VIDEO_HEIGHT        32
 
 typedef struct {
     uint8_t general_purpose[16];        /* 16 8-bit General Purpose registers */
@@ -16,25 +18,6 @@ typedef struct {
     
 } register_set;
 
-uint8_t fonts[] =
-{
-	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-	0x20, 0x60, 0x20, 0x20, 0x70, // 1
-	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-	0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-	0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-	0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-	0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-	0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-	0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-	0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-	0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-	0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-	0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-	0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-};
 
 class Chip8 
 {
@@ -42,9 +25,20 @@ class Chip8
         register_set registers;           /**< Registers */
         uint8_t memory[4096];             /**< 4K memory */
         uint16_t stack[16];
-        uint8_t keyboard[16]{};
-	    uint32_t video[64 * 32]{};
+        uint8_t keyboard[16];
+	    uint32_t video[64 * 32];
         uint16_t current_opcode;          /**< The current intruction */
+
+        typedef void (Chip8::*chip8_func)(void); 
+        chip8_func table[16];
+        chip8_func table0[16];
+        chip8_func table8[16];
+        chip8_func tableE[16];
+        chip8_func tableF[16];
+
+        void load_function_tables(void);
+        void load_fonts(void);
+        void load_rom();
 
         uint16_t current_opcode_lowest_12_bits(void);
         uint8_t current_opcode_nibble3(void);
@@ -54,9 +48,13 @@ class Chip8
         uint8_t current_opcode_byte0(void);
         uint8_t current_opcode_byte1(void);
 
+        void Table0(void);
+        void Table8(void); 
+        void TableE(void); 
+        void TableF(void);       
+
 
         void opcode_unhandled(void);
-        void opcode_0nnn(void);
         void opcode_00E0(void);
         void opcode_00EE(void);
         void opcode_1nnn(void);
@@ -82,6 +80,7 @@ class Chip8
         void opcode_Bnnn(void);
         void opcode_Cxkk(void);
         void opcode_Dxyn(void);
+
         void opcode_Ex9E(void);
         void opcode_ExA1(void);
 
@@ -100,8 +99,8 @@ class Chip8
         Chip8();
         ~Chip8();
         void initialize(void);
-        uint16_t get_program_counter(void);
         void fetch(void);
+        void execute(void);
 };
 
 #endif // CHIP8_H
