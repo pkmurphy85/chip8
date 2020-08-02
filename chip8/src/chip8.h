@@ -31,10 +31,10 @@ class Chip8
 
         typedef void (Chip8::*chip8_func)(void); 
         chip8_func table[16];
-        chip8_func table0[16];
-        chip8_func table8[16];
-        chip8_func tableE[16];
-        chip8_func tableF[16];
+        chip8_func table0[0xF];
+        chip8_func table8[0xF];
+        chip8_func tableE[0xB];
+        chip8_func tableF[0x66];
 
         void load_function_tables(void);
         void load_fonts(void);

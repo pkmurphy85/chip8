@@ -148,21 +148,20 @@ void Chip8::load_function_tables(void)
     table8[5] = &Chip8::opcode_8xy5;
     table8[6] = &Chip8::opcode_8xy6;
     table8[7] = &Chip8::opcode_8xy7;
-    //table8[8] = &Chip8::opcode_8xyE;
+    table8[0xE] = &Chip8::opcode_8xyE;
 
-    tableE[0] = &Chip8::opcode_ExA1;
-    tableE[1] = &Chip8::opcode_Ex9E;
-
+    tableE[0x9] = &Chip8::opcode_Ex9E;
+    tableE[0xA] = &Chip8::opcode_ExA1;
     
-    tableF[0] = &Chip8::opcode_Fx07;
-    tableF[1] = &Chip8::opcode_Fx0A;
-    tableF[2] = &Chip8::opcode_Fx15;   
-    tableF[3] = &Chip8::opcode_Fx18;
-    tableF[4] = &Chip8::opcode_Fx1E;
-    tableF[5] = &Chip8::opcode_Fx29;
-    tableF[6] = &Chip8::opcode_Fx33;
-    tableF[7] = &Chip8::opcode_Fx55;
-    tableF[8] = &Chip8::opcode_Fx65;
+    tableF[0x07] = &Chip8::opcode_Fx07;
+    tableF[0x0A] = &Chip8::opcode_Fx0A;
+    tableF[0x15] = &Chip8::opcode_Fx15;   
+    tableF[0x18] = &Chip8::opcode_Fx18;
+    tableF[0x1E] = &Chip8::opcode_Fx1E;
+    tableF[0x29] = &Chip8::opcode_Fx29;
+    tableF[0x33] = &Chip8::opcode_Fx33;
+    tableF[0x55] = &Chip8::opcode_Fx55;
+    tableF[0x65] = &Chip8::opcode_Fx65;
     
 
 }
@@ -190,13 +189,14 @@ void Chip8::Table8(void)
 void Chip8::TableE(void)
 {
     cout << "Table E" << endl;
-    ((*this).*(tableE[current_opcode_nibble0()]))();
+    ((*this).*(tableE[current_opcode_nibble1()]))();
 }
 
 void Chip8::TableF(void)
 {
-    cout << "Table F" << endl;
-    ((*this).*(tableF[current_opcode_nibble0()]))();
+    cout << "Table F " << hex << (uint16_t)current_opcode << endl;
+
+    ((*this).*(tableF[current_opcode_byte0()]))();
 }
 
 void Chip8::load_fonts()
@@ -212,7 +212,7 @@ void Chip8::load_rom()
     
     std::ifstream rom;
     
-    rom.open("../../../roms/IBM_Logo.rom", std::ios::binary);
+    rom.open("../../../roms/test_opcode.ch8", std::ios::binary);
 
     uint16_t count  = 0;    
     while (!rom.eof()) 
@@ -334,7 +334,7 @@ void Chip8::opcode_5xy0(void)
     uint8_t Vx = current_opcode_nibble2();
     uint8_t Vy = current_opcode_nibble1();
 
-    if(registers.general_purpose[Vx] != registers.general_purpose[Vy])
+    if(registers.general_purpose[Vx] == registers.general_purpose[Vy])
     {
         registers.program_counter += 2;
     }
@@ -675,6 +675,12 @@ void Chip8::opcode_Fx33(void)
     uint8_t bcd_tens = (digit - 100 * bcd_hundreds)/10;
     uint8_t bcd_ones = ((digit - 100 * bcd_hundreds) - 10 * bcd_tens);
 
+    cout << "digit: " << std::dec << (uint16_t)digit << endl;
+    cout << "bcd_hundreds: " << std::dec << (uint16_t)bcd_hundreds << endl;
+    cout << "bcd_tens: " << std::dec <<(uint16_t)bcd_tens << endl;
+    cout << "bcd_ones: " << std::dec << (uint16_t)bcd_ones << endl;
+
+
     memory[registers.index] = bcd_hundreds;
     memory[registers.index+1] = bcd_tens;
     memory[registers.index+2] = bcd_ones;
@@ -684,11 +690,22 @@ void Chip8::opcode_Fx55(void)
 {
     // Store registers V0 through Vx in memory starting at location I
 
-    cout << "opcode_Fx55" << endl;
+    
 
     uint8_t offset = current_opcode_nibble2();
+    cout << "opcode_Fx55. offset: " << std::dec << (uint16_t)offset << endl;
 
-    std::memcpy(&memory[registers.index], registers.general_purpose, offset);
+    //cout << "before update" << endl;
+    /*for(int i = 0; i<offset+1; i++)
+    {
+        cout << std::hex << (uint16_t)memory[registers.index] << " " << (uint16_t)registers.general_purpose[i] << endl;
+    }*/
+    std::memcpy(&memory[registers.index], registers.general_purpose, offset+1);
+    //cout << "after update" << endl;
+    /*for(int i = 0; i<offset+1; i++)
+    {
+        cout << std::hex << (uint16_t)memory[registers.index] << " " << (uint16_t)registers.general_purpose[i] << endl;
+    }*/
 }
 
 void Chip8::opcode_Fx65(void)
@@ -699,7 +716,7 @@ void Chip8::opcode_Fx65(void)
 
     uint8_t offset = current_opcode_nibble2();
 
-    std::memcpy(registers.general_purpose, &memory[registers.index], offset);
+    std::memcpy(registers.general_purpose, &memory[registers.index], offset+1);
 }
 
 uint8_t* Chip8::get_video(void)
@@ -709,7 +726,7 @@ uint8_t* Chip8::get_video(void)
 
 void Chip8::set_keys(uint8_t *new_keys)
 {
-    std::memcpy(keyboard, new_keys, sizeof(keyboard)/sizeof(keyboard[0]));
+    std::memcpy(keyboard, new_keys, sizeof(keyboard));
 }
 
 
