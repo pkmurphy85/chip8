@@ -26,7 +26,7 @@ class Chip8
         uint8_t memory[4096];             /**< 4K memory */
         uint16_t stack[16];
         uint8_t keyboard[16];
-	    uint32_t video[64 * 32];
+	    uint8_t video[64 * 32];           /**< each pixel is one byte */
         uint16_t current_opcode;          /**< The current intruction */
 
         typedef void (Chip8::*chip8_func)(void); 
@@ -101,6 +101,7 @@ class Chip8
         void initialize(void);
         void fetch(void);
         void execute(void);
+        uint8_t* get_video(void);
 };
 
 #endif // CHIP8_H

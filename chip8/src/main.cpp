@@ -11,6 +11,6 @@ int main(int argc, char* argv[])
     //chip8.load_rom();
     int return_val = gameloop.execute();
     //cout << "Application ending " << return_val << endl;
-    return return_val;
-    //return 0;
+    //return return_val;
+    return 0;
 }

@@ -47,7 +47,6 @@ Chip8::Chip8(void)
 {
     cout << "CPU created" << endl;
     registers.program_counter = ROM_START_ADDRESS;
-    //std::copy(fonts, fonts+sizeof(fonts), memory[FONTS_START_ADDRESS]);
 }
 
 Chip8::~Chip8(void)
@@ -62,22 +61,21 @@ void Chip8::initialize(void)
     registers.index = 0;
     registers.delay_timer = 0;
     registers.sound_timer = 0;
-    cout<< "Size of gen purp: " << sizeof(registers.general_purpose) << endl;
-    std::memset(registers.general_purpose, 0, sizeof(registers.general_purpose));
+    std::memset(registers.general_purpose, 0, sizeof(registers.general_purpose)/sizeof(registers.general_purpose[0]));
 
     //srand (time(NULL));
 
-    std::memset(keyboard, 0, sizeof(keyboard));
-    std::memset(video, 0, sizeof(video));
-    std::memset(memory, 0, sizeof(memory));
-    std::memset(stack, 0, sizeof(stack));
+    std::memset(keyboard, 0, sizeof(keyboard)/sizeof(keyboard[0]));
+    std::memset(video, 0, sizeof(video)/sizeof(video[0]));
+    std::memset(memory, 0, sizeof(memory)/sizeof(memory[0]));
+    std::memset(stack, 0, sizeof(stack)/sizeof(stack[0]));
 
     load_function_tables();
     load_fonts();
     load_rom();
 
     cout << "Initialized" << endl;
-    cout << "Program counter" << registers.program_counter << endl;
+    //cout << "Program counter" << registers.program_counter << endl;
 }
 
 uint8_t Chip8::current_opcode_nibble3(void)
@@ -213,22 +211,25 @@ void Chip8::load_rom()
     while (!rom.eof()) 
 	{
         memory[ROM_START_ADDRESS + count] = rom.get();
-        cout << hex << (uint16_t)memory[ROM_START_ADDRESS + count] << " ";
+        //cout << hex << (uint16_t)memory[ROM_START_ADDRESS + count] << " ";
         count += 1;
 	}
 
     rom.close();
 
     
-    cout << "Printing contents ..." << std::dec <<  sizeof(memory) << endl;
+    /*cout << "Printing contents ..." << std::dec <<  sizeof(memory) << endl;
     for(uint16_t i=0; i<count; i++)
     {
+        
         //uint16_t temp = memory[ROM_START_ADDRESS+i];
         cout << hex << ::std::setfill('0') << std::setw(2)<< (uint16_t)memory[ROM_START_ADDRESS+i] << " ";
-
+        if(i % 32 == 31)
+            cout << endl;
     }
 
     cout << endl;
+    */
     
     
 }
@@ -245,14 +246,26 @@ void Chip8::fetch(void)
                                       memory[registers.program_counter + 1]);
     registers.program_counter += 2;
 
-    //cout << "fetch opcode: " << hex << (uint16_t) current_opcode << endl;
-    //cout <<  "fetch program counter " << hex << registers.program_counter << endl;
+    if(current_opcode != 0x1228 )
+    {
+        cout << "FETCH" << endl;
+        cout << "current opcode: " << hex << std::setw(4) << (uint16_t) current_opcode << endl;
+        cout <<  "program counter: " << hex << std::setw(4) << (uint16_t)registers.program_counter << endl;
+        cout <<  "stack pointer: " << hex << std::setw(4) << (uint16_t)registers.stack_pointer << endl;
+        cout <<  "index register:  " << hex << std::setw(4) << (uint16_t)registers.index << endl;
+        for(uint16_t i = 0; i<16; i++)
+        {
+            cout <<  "general_purpose[" << i << "]: " << hex << std::setw(2) << (uint16_t)registers.general_purpose[i] << endl;;
+        }
+    }
+
+    
 }
 
 void Chip8::execute(void)
 {
-    cout << "execute: "<< hex << current_opcode << endl;
-    cout << "execute: "<< hex << (uint16_t)current_opcode_nibble3() << endl;
+    //cout << "execute: "<< hex << current_opcode << endl;
+    //cout << "execute: "<< hex << (uint16_t)current_opcode_nibble3() << endl;
     ((*this).*(table[current_opcode_nibble3()]))();
 }
 void Chip8::opcode_unhandled(void)
@@ -266,7 +279,9 @@ void Chip8::opcode_00E0(void)
 
     cout << "opcode_00E0" << endl;
     //cout << "Size of video: " << sizeof(video) << endl;
-    memset(video, 0, sizeof(video));
+    memset(video, 0, sizeof(video)/sizeof(video[0]));
+
+    cout << "video reset" << endl;
 }
 
 void Chip8::opcode_00EE(void)
@@ -282,7 +297,7 @@ void Chip8::opcode_00EE(void)
 void Chip8::opcode_1nnn(void)
 {
     // Jump to location nnn
-    cout << "opcode_1nnn" << endl;
+    //cout << "opcode_1nnn" << endl;
 
     registers.program_counter = current_opcode_lowest_12_bits();
 }
@@ -349,10 +364,10 @@ void Chip8::opcode_6xkk(void)
 
     cout << "opcode_6xkk" << endl;
 
-    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t Vx = current_opcode_nibble2();
     uint8_t byte = current_opcode_byte0();
 
-    registers.general_purpose[reg_x] = byte;
+    registers.general_purpose[Vx] = byte;
 }
 
 void Chip8::opcode_7xkk(void)
@@ -361,10 +376,10 @@ void Chip8::opcode_7xkk(void)
 
     cout << "opcode_7xkk" << endl;
 
-    uint8_t reg_x = current_opcode_nibble2();
+    uint8_t Vx = current_opcode_nibble2();
     uint8_t byte = current_opcode_byte0();
 
-    registers.general_purpose[reg_x] += byte;
+    registers.general_purpose[Vx] += byte;
 }
 
 void Chip8::opcode_8xy0(void)
@@ -507,6 +522,7 @@ void Chip8::opcode_Annn(void)
     cout << "opcode_Annn" << endl;
 
     registers.index = current_opcode_lowest_12_bits();
+    cout<< "registers.index: " << registers.index << endl;
 }
 
 void Chip8::opcode_Bnnn(void)
@@ -529,22 +545,78 @@ void Chip8::opcode_Cxkk(void)
     registers.general_purpose[reg_x] = (rand() % 256) & current_opcode_byte0();
 }
 
+
+
 void Chip8::opcode_Dxyn(void)
 {
+    cout << "opcode_Dxyn" << endl;
+    //memset(video, 0xFF, sizeof(video));
+    
     // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision
-    uint8_t x_loc = registers.general_purpose[current_opcode_nibble2()] % VIDEO_WIDTH;
-    uint8_t y_loc = registers.general_purpose[current_opcode_nibble1()] & VIDEO_HEIGHT;
+    uint8_t Vx = current_opcode_nibble2();
+    uint8_t Vy = current_opcode_nibble1();
+    uint8_t Vf = 15;
+    
+    uint8_t x_loc = registers.general_purpose[Vx] % VIDEO_WIDTH;
+    uint8_t y_loc = registers.general_purpose[Vy] % VIDEO_HEIGHT;
+    registers.general_purpose[Vf] = 0;
 
-    registers.general_purpose[15] = 0;
+    cout << "Xloc: " << std::dec << (uint16_t) x_loc << " yloc: " << (uint16_t)y_loc  << endl;
+    
     uint8_t num_rows = current_opcode_nibble0();
+    cout << "num rows: " << (uint16_t) num_rows << endl;
 
-    for(uint8_t row = 0; row<num_rows; row++)
+    for(int8_t row = 0; row<num_rows; row++)
     {
         uint8_t sprite_data = memory[registers.index + row]; 
 
+        for(int8_t col = 0; col <8; col++)
+        {
+            uint8_t sprite_pixel = sprite_data & (0x80u >> col);
+            uint8_t* screen_pixel = &video[(x_loc + col) + VIDEO_WIDTH*(y_loc + row)];
 
+            if(sprite_pixel)
+            {
+                if(*screen_pixel == 0xFF)
+                {
+                    registers.general_purpose[Vf] = 1;
+                }
+                *screen_pixel ^= 0xFF;
+
+                /*if(*screen_pixel== 0xff)
+                {
+                    cout << 1;
+                }
+                else
+                {
+                    cout << 0;
+                }*/
+
+
+            }
+        }
+        //cout << endl;
     }
-    cout << "Need to implement opcode_Dxyn" << endl;
+    //cout << endl;
+    /*
+    for(uint8_t j = 0; j<VIDEO_HEIGHT; j++)
+    {
+        for(uint8_t i = 0; i<VIDEO_WIDTH; i++)
+        {
+            if(video[i+j] == 0xff)
+            {
+                cout << 1;
+            }
+            else
+            {
+                cout << 0;
+            }
+            
+        }
+        cout << endl;
+    }
+    */
+    //*/
 }
 
 void Chip8::opcode_Ex9E(void)
@@ -680,6 +752,10 @@ void Chip8::opcode_Fx65(void)
     //std::copy(start_location, start_location+offset. registers.general_purpose);
 }
 
+uint8_t* Chip8::get_video(void)
+{
+    return video;
+}
 
 
 
