@@ -102,6 +102,7 @@ class Chip8
         void fetch(void);
         void execute(void);
         uint8_t* get_video(void);
+        void set_keys(uint8_t *new_keys);
 };
 
 #endif // CHIP8_H

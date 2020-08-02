@@ -85,10 +85,6 @@ bool Gameloop::initialize(void)
             std::cout << "SDL_CreateTexture failed" << std::endl;
             throw SDL_GetError();
         }
-        // make it black
-        //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        //SDL_RenderClear(renderer);
-        //SDL_RenderPresent(renderer); 
 
         chip8.initialize();
     }
@@ -100,7 +96,7 @@ bool Gameloop::initialize(void)
     catch(...)
     {
         return_code = false;
-        std::cout << "Unhandled error" << std::endl;
+        std::cout << "Unknown in initalize" << std::endl;
     }
 
     return return_code;
@@ -109,10 +105,172 @@ bool Gameloop::initialize(void)
 
 void Gameloop::process_event(SDL_Event* event)
 {
-    if(event->type == SDL_QUIT) 
+    uint8_t keys[16] = {0};
+    switch(event->type)
     {
-        is_running = false;
+        case SDL_QUIT:
+            is_running = false;
+            break;
+        
+        case SDL_KEYDOWN:
+            switch(event->key.keysym.sym)
+            {
+                case SDLK_ESCAPE:
+                    is_running = false;
+                    break;
+
+                case SDLK_0:
+                    keys[0] = 1;
+                    break;
+
+                case SDLK_1:
+                    keys[1] = 1;
+                    break;
+
+                case SDLK_2:
+                    keys[2] = 1;
+                    break;
+
+                case SDLK_3:
+                    keys[3] = 1;
+                    break;
+
+                case SDLK_4:
+                    keys[4] = 1;
+                    break;
+
+                case SDLK_5:
+                    keys[5] = 1;
+                    break;
+
+                case SDLK_6:
+                    keys[6] = 1;
+                    break;                    
+
+                case SDLK_7:
+                    keys[7] = 1;
+                    break;
+
+                case SDLK_8:
+                    keys[8] = 1;
+                    break;
+
+                case SDLK_9:
+                    keys[9] = 1;
+                    break;
+
+                case SDLK_a:
+                    keys[0xA] = 1;
+                    break; 
+
+                case SDLK_b:
+                    keys[0xB] = 1;
+                    break;
+
+                case SDLK_c:
+                    keys[0xC] = 1;
+                    break;  
+
+                case SDLK_d:
+                    keys[0xD] = 1;
+                    break;                 
+
+                case SDLK_e:
+                    keys[0xE] = 1;
+                    break; 
+
+                case SDLK_f:
+                    keys[0xF] = 1;
+                    break;   
+
+                default:
+                    break;
+            }
+            break;
+        
+        case SDL_KEYUP:
+            switch(event->key.keysym.sym)
+            {
+                case SDLK_ESCAPE:
+                    is_running = false;
+                    break;
+
+                case SDLK_0:
+                    keys[0] = 0;
+                    break;
+
+                case SDLK_1:
+                    keys[1] = 0;
+                    break;
+
+                case SDLK_2:
+                    keys[2] = 0;
+                    break;
+
+                case SDLK_3:
+                    keys[3] = 0;
+                    break;
+
+                case SDLK_4:
+                    keys[4] = 0;
+                    break;
+
+                case SDLK_5:
+                    keys[5] = 0;
+                    break;
+
+                case SDLK_6:
+                    keys[6] = 0;
+                    break;                    
+
+                case SDLK_7:
+                    keys[7] = 0;
+                    break;
+
+                case SDLK_8:
+                    keys[8] = 0;
+                    break;
+
+                case SDLK_9:
+                    keys[9] = 0;
+                    break;
+
+                case SDLK_a:
+                    keys[0xA] = 0;
+                    break; 
+
+                case SDLK_b:
+                    keys[0xB] = 0;
+                    break;
+
+                case SDLK_c:
+                    keys[0xC] = 0;
+                    break;  
+
+                case SDLK_d:
+                    keys[0xD] = 0;
+                    break;                 
+
+                case SDLK_e:
+                    keys[0xE] = 0;
+                    break; 
+
+                case SDLK_f:
+                    keys[0xF] = 0;
+                    break;   
+
+                default:
+                    break;
+            }
+            break;
+
+
+        default:
+            break;
+
     }
+    
+    chip8.set_keys(keys);
 }
 
 void Gameloop::update(void)

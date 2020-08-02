@@ -707,6 +707,11 @@ uint8_t* Chip8::get_video(void)
     return video;
 }
 
+void Chip8::set_keys(uint8_t *new_keys)
+{
+    std::memcpy(keyboard, new_keys, sizeof(keyboard)/sizeof(keyboard[0]));
+}
+
 
 
 
