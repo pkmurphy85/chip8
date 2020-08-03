@@ -191,10 +191,6 @@ void Gameloop::process_event(SDL_Event* event)
         case SDL_KEYUP:
             switch(event->key.keysym.sym)
             {
-                case SDLK_ESCAPE:
-                    is_running = false;
-                    break;
-
                 case SDLK_0:
                     keys[0] = 0;
                     break;
@@ -264,7 +260,6 @@ void Gameloop::process_event(SDL_Event* event)
             }
             break;
 
-
         default:
             break;
 
@@ -275,8 +270,7 @@ void Gameloop::process_event(SDL_Event* event)
 
 void Gameloop::update(void)
 {
-    chip8.fetch();
-    chip8.execute();
+    chip8.cycle();
 }
 
 void Gameloop::render(void)

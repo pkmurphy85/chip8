@@ -212,7 +212,7 @@ void Chip8::load_rom()
     
     std::ifstream rom;
     
-    rom.open("../../../roms/test_opcode.ch8", std::ios::binary);
+    rom.open("../../../roms/tetris.rom", std::ios::binary);
 
     uint16_t count  = 0;    
     while (!rom.eof()) 
@@ -464,7 +464,7 @@ void Chip8::opcode_8xy7(void)
     uint8_t Vx = current_opcode_nibble2();
     uint8_t Vy = current_opcode_nibble1();
 
-    registers.general_purpose[0xF] = registers.general_purpose[Vx] > registers.general_purpose[Vy] ? 1 : 0;
+    registers.general_purpose[0xF] = registers.general_purpose[Vy] > registers.general_purpose[Vx] ? 1 : 0;
 
     registers.general_purpose[Vx] = registers.general_purpose[Vy] - registers.general_purpose[Vx];
 }
@@ -570,7 +570,7 @@ void Chip8::opcode_Ex9E(void)
 
     uint8_t Vx = current_opcode_nibble2();
 
-    if(keyboard[Vx])
+    if(keyboard[registers.general_purpose[Vx]])
     {
         registers.program_counter += 2;
     }
@@ -584,7 +584,8 @@ void Chip8::opcode_ExA1(void)
 
     uint8_t Vx = current_opcode_nibble2();
 
-    if(!keyboard[Vx])
+    cout << "opcode_ExA1: " << (uint16_t)registers.general_purpose[Vx] << endl;
+    if(!keyboard[registers.general_purpose[Vx]])
     {
         registers.program_counter += 2;
     }
@@ -727,6 +728,32 @@ uint8_t* Chip8::get_video(void)
 void Chip8::set_keys(uint8_t *new_keys)
 {
     std::memcpy(keyboard, new_keys, sizeof(keyboard));
+    for(uint16_t i = 0; i<16; i++)
+    {
+        cout << "key[" << i << "]: " << (uint16_t) keyboard[i] << endl;
+    }
+}
+
+void Chip8::update_timers(void)
+{
+    // Decrement the delay timer if it's been set
+	if (registers.delay_timer > 0)
+	{
+	    registers.delay_timer -=1 ;
+	}
+
+	// Decrement the sound timer if it's been set
+	if (registers.sound_timer > 0)
+	{
+        registers.sound_timer -= 1;
+	}
+}
+
+void Chip8::cycle(void)
+{
+    fetch();
+    execute();
+    update_timers();
 }
 
 

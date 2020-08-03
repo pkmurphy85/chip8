@@ -39,6 +39,9 @@ class Chip8
         void load_function_tables(void);
         void load_fonts(void);
         void load_rom();
+        void fetch(void);
+        void execute(void);
+        void update_timers(void);
 
         uint16_t current_opcode_lowest_12_bits(void);
         uint8_t current_opcode_nibble3(void);
@@ -99,8 +102,9 @@ class Chip8
         Chip8();
         ~Chip8();
         void initialize(void);
-        void fetch(void);
-        void execute(void);
+        //void fetch(void);
+        //void execute(void);
+        void cycle(void);
         uint8_t* get_video(void);
         void set_keys(uint8_t *new_keys);
 };
